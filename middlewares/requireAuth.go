@@ -1,48 +1,49 @@
+// middlewares/authMiddleware.go
 package middlewares
 
 import (
-	"fmt"
+	"errors"
 	"net/http"
-	"os"
-	"time"
 
-	"github.com/McahitKutsal/auth-service/initializers"
-	"github.com/McahitKutsal/auth-service/models"
+	"github.com/McahitKutsal/auth-service/repositories"
+	"github.com/McahitKutsal/auth-service/utils"
 	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt/v5"
 )
+
+var userRepository = repositories.NewUserRepository()
 
 func RequireAuth(c *gin.Context) {
 	tokenString := c.GetHeader("Authorization")
-
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		// Don't forget to validate the alg is what you expect:
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
-		}
-		// hmacSampleSecret is a []byte containing your secret, e.g. []byte("my_secret_key")
-		return []byte(os.Getenv("SECRET")), nil
-	})
-
+	if tokenString == "" {
+		c.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+	token, err := utils.ParseToken(tokenString)
 	if err != nil {
-		c.AbortWithStatus(http.StatusUnauthorized)
+		utils.ErrorResponse(c, http.StatusUnauthorized, errors.New("invalid token"))
+		return
 	}
 
-	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-
-		if float64(time.Now().Unix()) > claims["exp"].(float64) {
-			c.AbortWithStatus(http.StatusUnauthorized)
-		}
-
-		var user models.User
-		initializers.DB.First(&user, claims["sub"])
-
-		if user.ID == 0 {
-			c.AbortWithStatus(http.StatusUnauthorized)
-		}
-		c.Set("user", user)
-		c.Next()
-	} else {
-		c.AbortWithStatus(http.StatusUnauthorized)
+	claims, ok := utils.ExtractClaims(token)
+	if !ok {
+		utils.ErrorResponse(c, http.StatusUnauthorized, errors.New("invalid token"))
+		return
 	}
+
+	if float64(utils.GetCurrentTimeUnix()) > claims["exp"].(float64) {
+		utils.ErrorResponse(c, http.StatusUnauthorized, errors.New("invalid token"))
+		return
+	}
+
+	// Fetch user details from database based on userID
+	// user, err := userRepository.FindUserByID(int(claims["id"].(float64)))
+	// Handle the user retrieval and response here...
+	userID := int(claims["id"].(float64))
+	user, err := userRepository.FindUserByID(userID)
+	if err != nil || user.ID == 0 {
+		utils.ErrorResponse(c, http.StatusUnauthorized, errors.New("invalid token"))
+		return
+	}
+	c.Set("user", user)
+	c.Next()
 }
