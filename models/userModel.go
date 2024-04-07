@@ -6,4 +6,5 @@ type User struct {
 	gorm.Model
 	Email    string `gorm:"unique"`
 	Password string
+	Roles    []Role `gorm:"many2many:user_roles;"`
 }

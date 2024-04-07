@@ -1,24 +1,21 @@
 package main
 
 import (
-	"os"
-
-	"github.com/McahitKutsal/auth-service/controllers"
-	"github.com/McahitKutsal/auth-service/initializers"
-	"github.com/McahitKutsal/auth-service/middlewares"
+	"github.com/McahitKutsal/auth-service/config"
+	"github.com/McahitKutsal/auth-service/routes"
 	"github.com/gin-gonic/gin"
 )
 
 func init() {
-	initializers.LoadEnvVariables()
-	initializers.ConnectToDb()
-	initializers.SyncDatabase()
+	config.LoadEnvVariables()
+	config.ConnectToDb()
+	config.SyncDatabase()
 }
 
 func main() {
 	r := gin.Default()
-	r.POST("/"+os.Getenv("VERSION")+"/signup", controllers.SignUp)
-	r.POST("/"+os.Getenv("VERSION")+"/login", controllers.Login)
-	r.GET("/"+os.Getenv("VERSION")+"/validate", middlewares.RequireAuth, controllers.Validate)
+
+	routes.SetupRoutes(r)
+
 	r.Run()
 }
