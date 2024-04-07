@@ -1,8 +1,7 @@
 package services
 
 import (
-	"fmt"
-
+	"github.com/McahitKutsal/auth-service/base"
 	"github.com/McahitKutsal/auth-service/models"
 	"github.com/McahitKutsal/auth-service/repositories"
 	"golang.org/x/crypto/bcrypt"
@@ -10,15 +9,24 @@ import (
 
 type userServiceImpl struct {
 	userRepository repositories.UserRepository
+	userValidator  base.UserService
 }
 
-func NewUserService(repo repositories.UserRepository) UserService {
+func NewUserService(repo repositories.UserRepository, validator base.UserService) base.UserService {
 	return &userServiceImpl{
 		userRepository: repo,
+		userValidator:  validator,
 	}
 }
 
 func (s *userServiceImpl) Register(email, password string) error {
+
+	// Validate input
+	err := s.userValidator.Register(email, password)
+	if err != nil {
+		return err
+	}
+
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), 10)
 	if err != nil {
 		return err
@@ -36,7 +44,6 @@ func (s *userServiceImpl) Register(email, password string) error {
 
 	user := &models.User{Email: email, Password: string(hash)}
 
-	fmt.Println("user", &user)
 	err = s.userRepository.CreateUser(user)
 	if err != nil {
 		return err
@@ -46,6 +53,12 @@ func (s *userServiceImpl) Register(email, password string) error {
 }
 
 func (s *userServiceImpl) Authenticate(email, password string) (*models.User, error) {
+
+	_, err := s.userValidator.Authenticate(email, password)
+	if err != nil {
+		return nil, err
+	}
+
 	user, err := s.userRepository.FindUserByEmail(email)
 	if err != nil || user == nil {
 		return nil, err

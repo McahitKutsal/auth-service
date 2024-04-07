@@ -9,11 +9,13 @@ import (
 	"github.com/McahitKutsal/auth-service/repositories"
 	"github.com/McahitKutsal/auth-service/services"
 	"github.com/McahitKutsal/auth-service/utils"
+	"github.com/McahitKutsal/auth-service/validators"
 	"github.com/gin-gonic/gin"
 )
 
 var userRepository = repositories.NewUserRepository()
-var userService = services.NewUserService(userRepository)
+var userValidator = validators.NewUserValidator()
+var userService = services.NewUserService(userRepository, userValidator)
 
 func SignUp(c *gin.Context) {
 	var body struct {
