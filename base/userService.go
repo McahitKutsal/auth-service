@@ -1,5 +1,5 @@
 // services/userService.go
-package services
+package base
 
 import (
 	"github.com/McahitKutsal/auth-service/models"
