@@ -76,3 +76,5 @@ func Validate(c *gin.Context) {
 	userToReturn.Password = ""
 	utils.SuccessResponse(c, gin.H{"user": userToReturn})
 }
+
+// test cs code git
