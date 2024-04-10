@@ -31,19 +31,9 @@ func (s *userServiceImpl) Register(email, password string) error {
 	if err != nil {
 		return err
 	}
-
-	// rolesSlice := []*models.Role{
-	// 	{Name: "Role1", AccessRights: []string{"read"}},
-	// 	{Name: "Role2", AccessRights: []string{"write"}},
-	// }
-	// Create a new AccessRight
-	// accessRight := models.AccessRight{Name: "read"}
-
-	// // Create a new Role with the AccessRight
-	// role := models.Role{Name: "ADMIN", AccessRights: []models.AccessRight{accessRight}}
+	//role := models.Role{Name: "ADMIN", AccessRights: []models.AccessRight{models.AccessRight{Name: "read"}}}
 
 	user := &models.User{Email: email, Password: string(hash)}
-
 	err = s.userRepository.CreateUser(user)
 	if err != nil {
 		return err

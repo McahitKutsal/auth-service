@@ -5,6 +5,7 @@ import "github.com/McahitKutsal/auth-service/models"
 func SyncDatabase() {
 	// Auto Migrate
 	// Auto Migrate
+	DB.AutoMigrate(&models.Tenant{})
 	DB.AutoMigrate(&models.User{})
 	DB.AutoMigrate(&models.Role{})
 	DB.AutoMigrate(&models.AccessRight{})
