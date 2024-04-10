@@ -7,4 +7,5 @@ type User struct {
 	Email    string `gorm:"unique"`
 	Password string
 	Roles    []Role `gorm:"many2many:user_roles;"`
+	TenantID *uint
 }

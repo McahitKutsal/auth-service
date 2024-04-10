@@ -3,6 +3,7 @@ package middlewares
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/McahitKutsal/auth-service/repositories"
@@ -14,6 +15,8 @@ var userRepository = repositories.NewUserRepository()
 
 func RequireAuth(c *gin.Context) {
 	tokenString := c.GetHeader("Authorization")
+	requiredAccessRight := c.GetHeader("Required-Access-Right")
+	fmt.Println(requiredAccessRight)
 	if tokenString == "" {
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
